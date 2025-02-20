@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: 1628771908126_initial_db_structure.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 1662469614800_update_hibernate_se_and_pj.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 1682764142107_tsa.sql
+      relativeToChangelogFile: true

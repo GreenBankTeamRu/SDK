@@ -1,0 +1,39 @@
+#Подробное описание параметров https://confluence.sberbank.ru/pages/viewpage.action?pageId=9221834258
+source_parameters:
+  name: "SBER_BUSINESS_API_SDK" # мнемонический идентификатор источника, module_id в SCREAMING_SNAKE_CASE, но не больше 25 символов
+  description: "Каркас ППРБ СББОЛ" # человекочитаемое описание источника согласно ARIS
+  modelType: "MAPPER_METAMODEL" # тип модели данных, применяемых источником. Для Маппера MAPPER_METAMODEL
+  whiteListMode: "ENABLED" # режим работы черного и белого списков
+  verboseKey: "false"
+  dqModuleId: 'sber_business_api_sdk' # идентификатор модуля ППРБ через который осуществляется ТКД и офлайн ТКД, module_id
+  ajZones: # список зон ПЖ по полигонам. Можно узнать у сопровождения
+    ift: sber_business_api_sdk
+    psi: sber_business_api_sdk
+    prom: sber_business_api_sdk
+  ajDataTypes: # типы данных ПЖ по полигонам
+    ift: ORM_CV
+    psi: ORM_CV
+    prom: ORM_CV
+  mmtZones: # список зон ММТ по полигонам. Можно узнать у сопровождения
+    ift: DEFAULT
+    psi: DEFAULT
+    prom: DEFAULT
+  nexusArtifactId: "CI03069386"
+  nexusGroupId: "CI02281165.pprb"
+  offDQRequestSenderFactoryMode: "KAFKA_WITH_SAMPLES" # режим работы offline-ТКД
+  nonRootTypeHandlingMode: "AS_IS" # параметр, указывающий необходимость конвертации запрошенного типа в рутовый. Для Маппера AS_IS
+  initiator: 'sber_business_api_sdk' # эквивалентно содержимому поля initiator заголовка журнала ПЖ, то есть название модуля, который отправляет данные в ПЖ. module_id
+  capWaitCommit: "true" # ожидать ли подтверждение на доставку сообщений от КАП
+  deserializerName: "com.sbt.pprbod.artifacts.mapper.MapperPprbodSourcePlugin" # название класса реализации интерфейса плагинной модели PprbodSourcePlugin
+  modelProviderType: "MAPPER" # тип провайдера модели, определяется исходя из типа интеграции с ТСА
+  componentCode: "БХБ02736343" # код компоненты, задается при генерации/загрузке модели для МЕТА
+  #  arisGUID: ""# ARIS GUID не нужно, если указан componentCode
+  dataSampleThreshold: "10000" #  количество отобранных ключей на стороне источника
+  initTopicMode: 'init' # в какой топик выгружать данные в ходе инита
+  timestampAsAvroLogicalType: "true"
+  nexusRepository: "maven-distr"
+  newCapFormatCollections: "false" # параметр для вновь разработанного оптимизированного формата передачи коллекций в КАП
+# https://confluence.sberbank.ru/pages/viewpage.action?pageId=9463726877 - плагинная модель
+#  artifactId: "" # artifactId плагина в nexus (обязательно для клиентов с плагинной моделью)
+#  groupId: "" # groupId плагина в nexus (обязательно для клиентов с плагинной моделью)
+#  version_artifact: "" # версия плагина (обязательно для клиентов с плагинной моделью)

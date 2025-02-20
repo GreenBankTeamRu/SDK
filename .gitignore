@@ -1,0 +1,32 @@
+# .iml files
+*.iml
+
+## File-based project format:
+*.ipr
+*.iws
+*.ids
+
+#all files in .idea directory
+.idea/
+.mvn/timing.properties
+
+# IntelliJ
+/out/
+
+.sberstack
+.project
+.DS_Store
+.settings/
+### target directories
+**/target/
+**/logs/
+**/log/
+**/build
+# gradle
+.gradle
+
+# tests
+**/vectors/
+
+#allure
+allure-results/

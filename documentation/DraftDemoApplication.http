@@ -1,0 +1,33 @@
+POST http://127.0.0.1:8080/v1/draft
+Content-Type: application/json
+
+{
+  "name": "Наименование",
+  "digitalId": "123"
+}
+
+
+###
+
+GET http://127.0.0.1:8080/v1/draft/60b5bf68-7564-4c39-9cd0-50e8f17996ba
+
+###
+
+PUT http://127.0.0.1:8080/v1/draft/60b5bf68-7564-4c39-9cd0-50e8f17996ba
+Content-Type: application/json
+
+{
+  "name": "Наименование",
+  "content": "Content"
+}
+
+###
+
+DELETE http://127.0.0.1:8080/v1/draft/85ee634c-c8a1-4ee7-8a13-b342983042d0
+
+###
+
+GET http://127.0.0.1:8080/v1/draft/list?name=Наим&number=0&offset=0&size=2
+
+###
+

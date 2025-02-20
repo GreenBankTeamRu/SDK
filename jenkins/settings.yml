@@ -1,0 +1,100 @@
+project_name: sber-business-api-sdk
+documentation:
+  build:
+    outputdir: build/docs
+    command: ./gradlew -PtokenName=${env.TOKEN_NAME} -PtokenPassword=${env.TOKEN_PASSWORD} -Dgradle.wrapperUser=${env.TOKEN_NAME} -Dgradle.wrapperPassword=${env.TOKEN_PASSWORD} build -x test
+liquibase:
+  changelog:
+    path: src/main/resources/db/changelog/changelog.yaml
+helm:
+  charts:
+    istio: helm/1.0
+    pprb: helm/1.0
+    prometheus: helm/1.0
+  label: prcheck
+pr_check:
+  vector:
+    compare:
+      release_uri: https://nexus-ci.delta.sbrf.ru/repository/maven-distr/CI02281165/pprb/CI03069386/D-01.000.00_0378/CI03069386-D-01.000.00_0378-distrib.zip
+    workdir: vectors
+    match:
+      files:
+      - src/main/java/ru/sberbank/pprb/sbbol/draft/entity
+      - src/test/java/ru/sberbank/pprb/sbbol/draft/changevector
+    command: ./gradlew -PtokenName=${env.TOKEN_NAME} -PtokenPassword=${env.TOKEN_PASSWORD} -Dgradle.wrapperUser=${env.TOKEN_NAME} -Dgradle.wrapperPassword=${env.TOKEN_PASSWORD} -Dtest.results.enabled=true -Dtest-layer=unit applyVectorTest --info
+  liquibase:
+    match:
+      files:
+      - buildSrc/
+      - src/main/resources/db/changelog
+  helm:
+    match:
+      files:
+      - helm/
+      - jenkins/settings.yml
+  deploy:
+    match:
+      files:
+      - buildSrc/
+      - src/
+      - docker/
+      - helm/
+      - jenkins/settings.yml
+      regex:
+      - .*\.kts
+      - .*\.properties
+    cpu: 2
+    memory: 8g
+    jenkins_job: OAFSIEKO/SBBOL/EFS/DEV/OpenShift/Deploy/sbbol-ufs/deploy-sber-business-api-sdk-DEV
+    label: blue
+    branch: develop
+    istio_tag: '2.5'
+  build_gradle:
+    match:
+      files:
+      - src/
+      - buildSrc/
+      regex:
+      - .*\.kts
+      - .*\.properties
+    cpu: 1
+    memory: 1g
+    command: ./gradlew -PtokenName=${env.TOKEN_NAME} -PtokenPassword=${env.TOKEN_PASSWORD} -Dgradle.wrapperUser=${env.TOKEN_NAME} -Dgradle.wrapperPassword=${env.TOKEN_PASSWORD} clean build -x test
+  test:
+    match:
+      files:
+      - src/
+      - buildSrc/
+      - jenkins/settings.yml
+      regex:
+      - .*\.kts
+      - .*\.properties
+    cpu: 2
+    memory: 8g
+    command: ./gradlew -PtokenName=${env.TOKEN_NAME} -PtokenPassword=${env.TOKEN_PASSWORD} -Dgradle.wrapperUser=${env.TOKEN_NAME} -Dgradle.wrapperPassword=${env.TOKEN_PASSWORD} -Dsonar.login=${env.SONAR_TOKEN} -Dsonar.host.url=https://sbt-sonarqube.sigma.sbrf.ru/ -Dsonar.projectKey=ru.sberbank.pprb.sbbol.draft:sber-business-api-sdk -Dsonar.projectVersion=${pullRequest.fromRef.displayId} -Dsonar.pullrequest.key=${params.pullRequestId} -Dsonar.pullrequest.branch=${pullRequest.fromRef.displayId} -Dsonar.pullrequest.base=${pullRequest.toRef.displayId} -Dtest-layer=unit,api,web,configuration,cdcConsumer -Dpactbroker.url=${env.PACT_BROKER_URL} -Dallure.jobrunId=${launch.jobRunId} -Dbuild.link=${env.BUILD_URL} -Dbuild.type=prCheck qaReporterUpload sonarCoverage --info #необходимо заменить на актуальное значение
+release:
+  publish:
+    curl: true
+  skip_openshift: true
+  version_basis: 01.000.00
+  repository: maven-distr-dev
+  artifact_id: CI08523450
+  group_id: CI02741778
+  image_name: CI02741778/CI08523450/sber-business-api-sdk
+  doc_path: build/docs
+  qgm:
+    repository: maven-distr
+  build_gradle:
+    cpu: 2
+    memory: 8g
+    command: ./gradlew -PtokenName=${env.TOKEN_NAME} -PtokenPassword=${env.TOKEN_PASSWORD} -Dgradle.wrapperUser=${env.TOKEN_NAME} -Dgradle.wrapperPassword=${env.TOKEN_PASSWORD} -Pversion=${env.VERSION} -Dbuild.link=${env.BUILD_URL} -Dbuild.type=release build -x test generateVectorTest --parallel --info
+  dfci:
+    enabled: false
+  jobs:
+    vectorRelease:
+      wait: false
+    liquibaseRelease:
+      wait: false
+adminGuide:
+  path: asciidoc/admin-guide
+  enabled: true

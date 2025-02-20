@@ -1,0 +1,14 @@
+:Author:    <название команды>
+:Email:     <командная почта>
+
+= <название продукта (КЭ)>
+:sectnums:
+:toc: left
+
+include::01_title.adoc[]
+
+== Точки интеграции приложения
+include::02_integration.adoc[]
+
+== Дополнительные изменения
+include::03_other_changes.adoc[]
