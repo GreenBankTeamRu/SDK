@@ -1,25 +1,15 @@
+rootProject.name = "SberBusinessApi_SDK"
+
 pluginManagement {
     repositories {
+        mavenCentral()
         val tokenName: String by settings
         val tokenPassword: String by settings
-        maven {
-            url = uri("https://nexus-ci.delta.sbrf.ru/repository/public/")
-            credentials {
-                username = tokenName
-                password = tokenPassword
-            }
-            isAllowInsecureProtocol = true
-        }
-
-        maven {
-            url = uri("https://nexus-ci.delta.sbrf.ru/repository/maven-lib-int/")
-            credentials {
-                username = tokenName
-                password = tokenPassword
-            }
-            isAllowInsecureProtocol = true
-        }
     }
 }
+include("sber-authorization")
+include("sber-instantpayment")
+include("build-src")
+include("sber-h2h")
 
 rootProject.name = "sber-business-api-sdk"
