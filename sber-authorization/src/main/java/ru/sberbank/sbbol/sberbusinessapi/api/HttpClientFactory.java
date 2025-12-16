@@ -5,26 +5,28 @@ import lombok.Getter;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
 import okhttp3.internal.tls.OkHostnameVerifier;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMParser;
 import ru.sberbank.sbbol.sberbusinessapi.utils.CertUtils;
 
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStream;
-import java.security.*;
-import java.security.cert.CertPathValidator;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.security.cert.PKIXParameters;
-import java.security.cert.X509Certificate;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.*;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @Builder(builderMethodName = "of")
 public class HttpClientFactory {
@@ -103,46 +105,31 @@ public class HttpClientFactory {
 
     private KeyStore loadSberTrustStore() throws Exception {
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        trustStore.load(null, null); // Initialize empty keystore
+        trustStore.load(null, null);
 
         if (customTrustPath != null && !customTrustPath.isEmpty()) {
-            if (customTrustPath.endsWith(".pem")) {
-                loadPemCertificates(trustStore);
-            } else if (customTrustPath.endsWith(".cer")) {
-                loadCerCertificate(trustStore);
+            Path path = Paths.get(customTrustPath);
+            if (Files.isDirectory(path)) {
+                try (Stream<Path> paths = Files.list(path)) {
+                    paths
+                            .filter(p -> p.getFileName().toString().toLowerCase().matches(".*\\.(cer|crt)$"))
+                            .forEach(p -> {
+                                try {
+                                    loadCertificateFile(trustStore, p.toFile().getAbsolutePath());
+                                } catch (Exception e) {
+                                    throw new RuntimeException("Failed to load certificate: " + p, e);
+                                }
+                            });
+                }
+            } else if (Files.isRegularFile(path)) {
+                loadCertificateFile(trustStore, customTrustPath);
             } else {
-                throw new IllegalArgumentException("Unsupported certificate format. Expected .pem or .cer.");
+                throw new IllegalArgumentException("customTrustPath must be a valid file or directory: " + customTrustPath);
             }
         }
 
         mergeKeystores(CertUtils.getSystemTrustStore(), trustStore);
         return trustStore;
-    }
-
-    private void loadPemCertificates(KeyStore trustStore) throws Exception {
-        try (FileReader reader = new FileReader(customTrustPath);
-             PEMParser pemParser = new PEMParser(reader)) {
-
-            Object pemObject;
-            while ((pemObject = pemParser.readObject()) != null) {
-                if (pemObject instanceof X509CertificateHolder) {
-                    X509Certificate certificate = new JcaX509CertificateConverter()
-                            .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                            .getCertificate((X509CertificateHolder) pemObject);
-
-                    trustStore.setCertificateEntry("cert-" + certificate.getSerialNumber(), certificate);
-                }
-            }
-        }
-    }
-
-    private void loadCerCertificate(KeyStore trustStore) throws Exception {
-        try (InputStream fis = new FileInputStream(customTrustPath)) {
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-            X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(fis);
-
-            trustStore.setCertificateEntry("cert-" + certificate.getSerialNumber(), certificate);
-        }
     }
 
     private void mergeKeystores(KeyStore source, KeyStore destination) throws Exception {
@@ -163,6 +150,23 @@ public class HttpClientFactory {
     private void validateCustomCertPath(String path) {
         if (path == null || path.isEmpty()) {
             throw new IllegalArgumentException("Custom certificate path cannot be blank or empty.");
+        }
+    }
+
+    private void loadCertificateFile(KeyStore trustStore, String certPath) throws Exception {
+        String lowerPath = certPath.toLowerCase();
+        if (lowerPath.endsWith(".pem")) {
+            throw new UnsupportedOperationException("PEM format is not supported for multi-cert trust path. Use .cer/.crt or directory.");
+            // (если PEM всё же нужен — можно вызвать loadPemCertificates отдельно, но он не поддерживает многофайловость)
+        } else if (lowerPath.endsWith(".cer") || lowerPath.endsWith(".crt")) {
+            try (InputStream fis = new FileInputStream(certPath)) {
+                CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+                X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(fis);
+                String alias = "cert-" + certificate.getSerialNumber().toString(16);
+                trustStore.setCertificateEntry(alias, certificate);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported certificate format: " + certPath + ". Expected .cer or .crt.");
         }
     }
 }

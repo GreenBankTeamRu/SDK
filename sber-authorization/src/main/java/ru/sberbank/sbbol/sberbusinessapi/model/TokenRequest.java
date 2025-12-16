@@ -61,7 +61,6 @@ public class TokenRequest extends SbbapiBaseRequest {
      * Пароль вашей Платформы. Вы его впервые получаете при подключении к Sber API и в последующем периодически обновляете.
      */
     @NotBlank(message = "Client secret is required.")
-    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "Invalid client secret format.")
     @JsonProperty("client_secret")
     private String clientSecret;
 

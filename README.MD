@@ -64,6 +64,8 @@ dependencies {
         .host("https://auth-server.url")
         .customCertPath("/path/to/cert.p12")
         .customCertPassword("password")
+        //указать директорию, где хранятся корневой и промежуточный сертификат (sberca-ext.crt и sberca-root-ext.crt)
+        .customTrustPath("/Users/18701423/Documents/SDK/certs-prom/")
         .build();
 
 AuthorizationApiClient authClient = new AuthorizationApiClientImpl(httpClientFactory);</code></pre>

@@ -2,9 +2,8 @@ rootProject.name = "SberBusinessApi_SDK"
 
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         mavenCentral()
-        val tokenName: String by settings
-        val tokenPassword: String by settings
     }
 }
 include("sber-authorization")
