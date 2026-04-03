@@ -9,6 +9,9 @@ import ru.sberbank.sbbol.sberbusinessapi.model.crypto.CryptoInfoResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.dictionary.DictionaryResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.payment.FintechPayment;
 import ru.sberbank.sbbol.sberbusinessapi.model.payment.FintechPaymentDocState;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BLinkCreateRequest;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BLinkCreateResponse;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BgetTransactionListResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.payroll.FintechPayroll;
 import ru.sberbank.sbbol.sberbusinessapi.model.payroll.FintechPayrollState;
 import ru.sberbank.sbbol.sberbusinessapi.model.statement.FintechStatementSummary;
@@ -17,6 +20,7 @@ import ru.sberbank.sbbol.sberbusinessapi.model.statement.FintechStatementTransac
 
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public interface H2hApi {
 
@@ -48,6 +52,7 @@ public interface H2hApi {
 
     /**
      * Метод получения информации о криптографии EIO
+     *
      * @param accessToken токен авторизации
      * @return
      */
@@ -55,45 +60,52 @@ public interface H2hApi {
 
     /**
      * Запрос на выпуск сертификата
+     *
      * @param accessToken токен авторизации
-     * @param request объект запроса
+     * @param request     объект запроса
      * @return
      */
     CertRequest certificateRequest(@NotBlank String accessToken, CertRequest request);
 
     /**
      * Запрос на выпуск сертификата EIO
+     *
      * @param accessToken токен авторизации
-     * @param request объект запроса
+     * @param request     объект запроса
      * @return
      */
     CertRequestEIO getCertRequestEio(@NotBlank String accessToken, CertRequestEIO request);
 
     /**
      * Запрос на активацию сертификата еио
+     *
      * @param accessToken токен авторизации
-     * @param externalId идентификатор сертификата
+     * @param externalId  идентификатор сертификата
      */
     void activateCertEIO(@NotBlank String accessToken, String externalId);
+
     /**
      * Запрос на активацию сертификата
+     *
      * @param accessToken токен авторизации
-     * @param externalId идентификатор сертификата
+     * @param externalId  идентификатор сертификата
      */
     void activateCert(@NotBlank String accessToken, String externalId);
 
     /**
      * Метод печати сертификата
+     *
      * @param accessToken токен авторизации
-     * @param externalId идентификатор сертификата
+     * @param externalId  идентификатор сертификата
      * @return
      */
     byte[] printCertificate(String accessToken, String externalId);
 
     /**
      * Метод получения статуса сертификата
+     *
      * @param accessToken токен авторизации
-     * @param externalId идентификатор сертификата
+     * @param externalId  идентификатор сертификата
      * @return
      */
     AcceptanceAdvance getCertState(@NotBlank String accessToken, String externalId);
@@ -101,8 +113,9 @@ public interface H2hApi {
 
     /**
      * Метод получения статуса сертификата eio
+     *
      * @param accessToken токен авторизации
-     * @param externalId идентификатор сертификата
+     * @param externalId  идентификатор сертификата
      * @return
      */
     AcceptanceAdvance getCertEIOState(@NotBlank String accessToken, String externalId);
@@ -136,7 +149,8 @@ public interface H2hApi {
 
     /**
      * Получить информацию по оборотам счета
-     * @param accessToken токен авторизации
+     *
+     * @param accessToken   токен авторизации
      * @param accountNumber номер счета
      * @param statementDate дата оборота
      * @return обороты счета
@@ -145,8 +159,9 @@ public interface H2hApi {
 
     /**
      * Получить информацию из выписки по одной операции
-     * @param accessToken токен авторизации
-     * @param id идентификатор оборота
+     *
+     * @param accessToken   токен авторизации
+     * @param id            идентификатор оборота
      * @param accountNumber номер счета
      * @param operationDate дата оборота
      * @return оборот счета
@@ -155,11 +170,12 @@ public interface H2hApi {
 
     /**
      * Получить информацию из выписки по нескольким операциям
-     * @param accessToken токен авторизации
+     *
+     * @param accessToken   токен авторизации
      * @param accountNumber номер счета
      * @param statementDate дата оборота
-     * @param page номер страницы
-     * @param curFormat формат
+     * @param page          номер страницы
+     * @param curFormat     формат
      * @return список операций
      */
     FintechStatementTransactions getStatementTransactions(String accessToken, String accountNumber, LocalDate statementDate, int page, String curFormat);
@@ -184,9 +200,26 @@ public interface H2hApi {
 
     /**
      * Метод получения статуса ведомости
+     *
      * @param accessToken токен авторизации
-     * @param externalId идентификатор ведомости
+     * @param externalId  идентификатор ведомости
      * @return статус ведомости
      */
     FintechPayrollState getPayrollState(String accessToken, String externalId);
+
+    /**
+     * Метод регистрации функциональной ссылки
+     *
+     * @param accessToken токен авторизации
+     * @param request     запрос на регистрацию функциональной ссылки
+     */
+    SbpB2BLinkCreateResponse createPaymentLink(String accessToken, SbpB2BLinkCreateRequest request);
+
+    /**
+     * Получение регистрации функциональной ссылки
+     *
+     * @param accessToken токен авторизации
+     * @param linkId      идентификатор функциональной ссылки
+     */
+    SbpB2BgetTransactionListResponse getPaymentLinkList(String accessToken, UUID linkId);
 }

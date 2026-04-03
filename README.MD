@@ -18,6 +18,7 @@
         <pre><code>keytool -importcert -alias &lt;alias&gt; -file &lt;cert_path&gt; -keystore &lt;path_to_cacerts&gt; -storepass changeit</code></pre>
       </li>
       <li>Или укажите путь к сертификату при создании <code>HttpClientFactory</code></li>
+      <li>Сертификаты находятся в корне проекта в директории certs</li>
     </ul>
   </li>
 </ul>

@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
 import okhttp3.internal.tls.OkHostnameVerifier;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
 import ru.sberbank.sbbol.sberbusinessapi.utils.CertUtils;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -14,8 +17,10 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
@@ -112,7 +117,7 @@ public class HttpClientFactory {
             if (Files.isDirectory(path)) {
                 try (Stream<Path> paths = Files.list(path)) {
                     paths
-                            .filter(p -> p.getFileName().toString().toLowerCase().matches(".*\\.(cer|crt)$"))
+                            .filter(p -> p.getFileName().toString().toLowerCase().matches(".*\\.(cer|crt|pem)$"))
                             .forEach(p -> {
                                 try {
                                     loadCertificateFile(trustStore, p.toFile().getAbsolutePath());
@@ -156,7 +161,7 @@ public class HttpClientFactory {
     private void loadCertificateFile(KeyStore trustStore, String certPath) throws Exception {
         String lowerPath = certPath.toLowerCase();
         if (lowerPath.endsWith(".pem")) {
-            throw new UnsupportedOperationException("PEM format is not supported for multi-cert trust path. Use .cer/.crt or directory.");
+            loadPemCertificates(trustStore);
             // (если PEM всё же нужен — можно вызвать loadPemCertificates отдельно, но он не поддерживает многофайловость)
         } else if (lowerPath.endsWith(".cer") || lowerPath.endsWith(".crt")) {
             try (InputStream fis = new FileInputStream(certPath)) {
@@ -167,6 +172,23 @@ public class HttpClientFactory {
             }
         } else {
             throw new IllegalArgumentException("Unsupported certificate format: " + certPath + ". Expected .cer or .crt.");
+        }
+    }
+
+    private void loadPemCertificates(KeyStore trustStore) throws Exception {
+        try (FileReader reader = new FileReader(customTrustPath);
+             PEMParser pemParser = new PEMParser(reader)) {
+
+            Object pemObject;
+            while ((pemObject = pemParser.readObject()) != null) {
+                if (pemObject instanceof X509CertificateHolder) {
+                    X509Certificate certificate = new JcaX509CertificateConverter()
+                            .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                            .getCertificate((X509CertificateHolder) pemObject);
+
+                    trustStore.setCertificateEntry("cert-" + certificate.getSerialNumber(), certificate);
+                }
+            }
         }
     }
 }

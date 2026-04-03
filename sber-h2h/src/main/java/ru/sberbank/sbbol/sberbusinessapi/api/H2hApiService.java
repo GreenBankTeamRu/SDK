@@ -16,6 +16,9 @@ import ru.sberbank.sbbol.sberbusinessapi.model.crypto.CryptoInfoResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.dictionary.DictionaryDtoResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.payment.FintechPayment;
 import ru.sberbank.sbbol.sberbusinessapi.model.payment.FintechPaymentDocState;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BLinkCreateRequest;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BLinkCreateResponse;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BgetTransactionListResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.payroll.FintechPayroll;
 import ru.sberbank.sbbol.sberbusinessapi.model.payroll.FintechPayrollState;
 import ru.sberbank.sbbol.sberbusinessapi.model.statement.FintechStatementSummary;
@@ -39,19 +42,19 @@ public interface H2hApiService {
     @GET("/fintech/api/v1/crypto/eio")
     Call<CryptoInfoEIOResponse> getCryptoEio(@Header("Authorization") String accessToken);
 
-    @POST("/fintech/api/v1/crypto/cert-requests")
+    @POST("/fintech/api/v2/crypto/cert-requests")
     Call<CertRequest> certificateRequest(@Header("Authorization") String accessToken, @Body CertRequest body);
 
-    @POST("/fintech/api/v1/crypto/cert-requests/eio")
+    @POST("/fintech/api/v2/crypto/cert-requests/eio")
     Call<CertRequestEIO> certificateRequestEIO(@Header("Authorization") String accessToken, @Body CertRequestEIO body);
 
     @POST("/fintech/api/v1/crypto/cert-requests/eio/{externalId}/activate")
     Call<Void> activateCertEIO(@Header("Authorization") String accessToken, @Path("externalId") String externalId);
 
-    @POST("/fintech/api/v1/crypto/cert-requests/eio/{externalId}/activate")
+    @POST("/fintech/api/v1/crypto/cert-requests/{externalId}/activate")
     Call<Void> activateCert(@Header("Authorization") String accessToken, @Path("externalId") String externalId);
 
-    @GET("/fintech/api/v1/crypto/cert-requests/{externalId}/print")
+    @GET("/fintech/api/v2/crypto/cert-requests/{externalId}/print")
     Call<byte[]> printCert(@Header("Authorization") String accessToken, @Path("externalId") String externalId);
 
     @GET("/fintech/api/v1/crypto/cert-requests/{externalId}/state")
@@ -98,4 +101,10 @@ public interface H2hApiService {
 
     @GET("/fintech/api/v1/payrolls/{externalId}/state")
     Call<FintechPayrollState> getPayrollState(@Header("Authorization") String accessToken, @Path("externalId") String externalId);
+
+    @POST("/fintech/api/sbpb2b/v1/sbp/payment-link/create")
+    Call<SbpB2BLinkCreateResponse> createPaymentLink(@Header("Authorization") String accessToken, @Body SbpB2BLinkCreateRequest request);
+
+    @GET("/fintech/api/sbpb2b/v1/sbp/payment-link/getTransactionList/{linkId}")
+    Call<SbpB2BgetTransactionListResponse> getPaymentLinkList(@Header("Authorization") String accessToken, @Path("linkId") String linkId);
 }

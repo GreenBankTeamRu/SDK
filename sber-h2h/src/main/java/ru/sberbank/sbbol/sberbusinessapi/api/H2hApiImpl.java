@@ -1,12 +1,6 @@
 package ru.sberbank.sbbol.sberbusinessapi.api;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Retrofit;
@@ -24,22 +18,23 @@ import ru.sberbank.sbbol.sberbusinessapi.model.dictionary.DictionaryDtoResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.dictionary.DictionaryResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.payment.FintechPayment;
 import ru.sberbank.sbbol.sberbusinessapi.model.payment.FintechPaymentDocState;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BLinkCreateRequest;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BLinkCreateResponse;
+import ru.sberbank.sbbol.sberbusinessapi.model.paymentlink.SbpB2BgetTransactionListResponse;
 import ru.sberbank.sbbol.sberbusinessapi.model.payroll.FintechPayroll;
 import ru.sberbank.sbbol.sberbusinessapi.model.payroll.FintechPayrollState;
 import ru.sberbank.sbbol.sberbusinessapi.model.statement.FintechStatementSummary;
 import ru.sberbank.sbbol.sberbusinessapi.model.statement.FintechStatementTransaction;
 import ru.sberbank.sbbol.sberbusinessapi.model.statement.FintechStatementTransactions;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Base64;
-import java.util.Properties;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -170,6 +165,17 @@ public class H2hApiImpl extends ApiClient implements H2hApi {
     @Override
     public FintechPayrollState getPayrollState(String accessToken, String externalId) {
         return executeRequest(h2hApiService.getPayrollState(accessToken, externalId));
+    }
+
+    @Override
+    public SbpB2BLinkCreateResponse createPaymentLink(String accessToken, SbpB2BLinkCreateRequest request) {
+        validate(request);
+        return executeRequest(h2hApiService.createPaymentLink(accessToken, request));
+    }
+
+    @Override
+    public SbpB2BgetTransactionListResponse getPaymentLinkList(String accessToken, UUID linkId) {
+        return executeRequest(h2hApiService.getPaymentLinkList(accessToken, linkId.toString()));
     }
 
     public static String decodeAndUnzip(String base64EncodedZip) {
